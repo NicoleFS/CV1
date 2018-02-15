@@ -6,7 +6,7 @@ disp('Part 1: Photometric Stereo')
 
 % obtain many images in a fixed view under different illumination
 disp('Loading images...')
-image_dir = './SphereGray5/';   % TODO: get the path of the script
+image_dir = 'photometrics_images/SphereGray5/';   % TODO: get the path of the script
 %image_ext = '*.png';
 
 [image_stack, scriptV] = load_syn_images(image_dir);
@@ -17,6 +17,11 @@ fprintf('Finish loading %d images.\n\n', n);
 disp('Computing surface albedo and normal map...')
 [albedo, normals] = estimate_alb_nrm(image_stack, scriptV);
 
+imshow(albedo);
+quiver3(zeros(512, 512), normals(:, :, 1), normals(:, :, 2), normals(:, :, 3));
+view(-35,45)
+
+a == a
 
 %% integrability check: is (dp / dy  -  dq / dx) ^ 2 small everywhere?
 disp('Integrability checking')
