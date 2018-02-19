@@ -1,6 +1,6 @@
 function [output_image] = rgb2grays(input_image)
-
 % converts an RGB into grayscale by using 4 different methods
+
 [size1, size2, size3] = size(input_image);
 output_image = zeros(size1,size2,size3+1);
 

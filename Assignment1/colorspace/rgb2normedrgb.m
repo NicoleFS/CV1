@@ -3,9 +3,7 @@ function [output_image] = rgb2normedrgb(input_image)
 
 output_image = zeros(size(input_image));
 
-R = input_image(:,:,1);
-G = input_image(:,:,2);
-B = input_image(:,:,3);
+[R,G,B] = getColorChannels(input_image);
 
 r = R./(R+B+G);
 g = G./(R+B+G);
