@@ -29,19 +29,27 @@ normal = zeros(h, w, 3);
 %   albedo at this point is |g|
 %   normal at this point is g / |g|
 
+if shadow_trick
+    disp('using shadow trick');
+end
+
 for x = 1:h 
     for y = 1:w
         i = reshape(image_stack(x, y, :), [], 1);
-        if all(i == 0)
-           continue 
+        if all(i(:) == 0)
+            continue 
         end
-        I = diag(i);
-        A = I*scriptV;
-        B = I*i;
-        g = mldivide(A, B);
-        albedo(x, y) = norm(g);
-        if albedo(x, y) ~= 0
-            normal(x, y, :) = g/albedo(x, y);
+        if shadow_trick
+            I = diag(i);
+            A = I*scriptV;
+            B = I*i;
+            g = mldivide(A, B);
+            albedo(x, y) = norm(g);
+            normal(x, y, :) = g./albedo(x, y);
+        else
+            g = mldivide(scriptV, i);
+            albedo(x, y) = norm(g);
+            normal(x, y, :) = g./albedo(x, y);
         end
     end
 end
