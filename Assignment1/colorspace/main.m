@@ -18,4 +18,4 @@ I = imread('peppers.png');
 % J = ConvertColorSpace(I,'ycbcr');
 
 % close all
-% J = ConvertColorSpace(I,'gray');
+J = ConvertColorSpace(I,'gray');
