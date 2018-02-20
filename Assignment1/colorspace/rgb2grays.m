@@ -1,17 +1,23 @@
 function [output_image] = rgb2grays(input_image)
 % converts an RGB into grayscale by using 4 different methods
 
+% Obtain dimensions of input image 
 [size1, size2, size3] = size(input_image);
+
+% Create empty matrix to store each method in separate channels
 output_image = zeros(size1,size2,size3+1);
 
+% Obtain separate RGB channels
 [R,G,B] = getColorChannels(input_image);
 [x_RGB, y_RGB] = size(R);
 
 % ligtness method
 out_lightness = zeros(size(R));
 
+% For each pixel
 for i = 1:x_RGB
     for j = 1:y_RGB
+        % Calculate lightness method
         vals = [R(i,j), G(i,j), B(i,j)];
         grays = (max(vals)+min(vals))/2;
         out_lightness(i,j) = grays;
