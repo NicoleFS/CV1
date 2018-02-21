@@ -26,10 +26,13 @@ switch path_type
         %   for each element of the row except for leftmost
         %       height_value = previous_height_value + corresponding_p_value
         
+        % first the most left column
         for y = 2:h
             height_map(y, 1) = height_map(y-1, 1) + q(y, 1);
         end
+        % for each row
         for y = 1:h
+            % go over all values
             for x = 2:w
                 height_map(y, x) = height_map(y, x-1) + p(y, x);
             end
@@ -41,10 +44,13 @@ switch path_type
         
         % =================================================================
         % YOUR CODE GOES HERE
+        % for top row
         for x = 2:w
             height_map(1, x) = height_map(1, x-1) + p(1, x);
         end
+        % for each column
         for x = 1:w
+            % go over all values
             for y = 2:h
                 height_map(y, x) = height_map(y-1, x) + q(y, x);
             end
@@ -56,6 +62,7 @@ switch path_type
         
         % =================================================================
         % YOUR CODE GOES HERE
+        % average both cases from above
         height_map1 = zeros(h, w);
         height_map2 = zeros(h, w);
         for x = 2:h
