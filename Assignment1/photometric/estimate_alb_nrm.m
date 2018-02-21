@@ -29,28 +29,28 @@ normal = zeros(h, w, 3);
 %   albedo at this point is |g|
 %   normal at this point is g / |g|
 
-if shadow_trick
-    disp('using shadow trick');
-end
-
+% loop over each pixel
 for x = 1:h 
     for y = 1:w
+        % extract intensities
         i = reshape(image_stack(x, y, :), [], 1);
+        % skip if only black pixels
         if all(i(:) == 0)
             continue 
         end
+        % shadow trick
         if shadow_trick
             I = diag(i);
             A = I*scriptV;
             B = I*i;
             g = mldivide(A, B);
-            albedo(x, y) = norm(g);
-            normal(x, y, :) = g./albedo(x, y);
         else
             g = mldivide(scriptV, i);
-            albedo(x, y) = norm(g);
-            normal(x, y, :) = g./albedo(x, y);
         end
+        % norm of vector is albedo
+        albedo(x, y) = norm(g);
+        % normals should be unit size
+        normal(x, y, :) = g./albedo(x, y);
     end
 end
 
