@@ -1,4 +1,4 @@
-function [ myGabor ] = createGabor( sigma, theta, lambda, psi, gamma )
+function [ myGabor ] = createGabor(sigma, theta, lambda, psi, gamma)
 %CREATEGABOR Creates a complex valued Gabor filter.
 %   myGabor = createGabor( sigma, theta, lambda, psi, gamma ) generates
 %   Gabor kernels.  
@@ -58,8 +58,8 @@ sinCarrier = createSin(rot_x, lambda, psi);
 
 % Modulate (multiply) Gaussian envelope with the carriers to compute 
 % the real and imaginary components of the omplex Gabor filter. 
-myGabor_real =      % \\TODO: modulate gaussianEnv with cosCarrier
-myGabor_imaginary = % \\TODO: modulate gaussianEnv with sinCarrier
+myGabor_real =      gaussianEnv.*cosCarrier; % \\TODO: modulate gaussianEnv with cosCarrier
+myGabor_imaginary = gaussianEnv.*sinCarrier;% \\TODO: modulate gaussianEnv with sinCarrier
 
 % Pack myGabor_real and myGabor_imaginary into myGabor.
 myGabor(:,:,1) = myGabor_real;
@@ -77,14 +77,14 @@ function rotMat = generateRotationMatrix(theta)
 % ----------------------------------------------------------
 % Returns the rotation matrix. 
 % \\ Hint: https://en.wikipedia.org/wiki/Rotation_matrix \\
-rotMat = % \\TODO: code the rotation matrix given theta.
+rotMat = [cos(theta), -sin(theta); sin(theta) cos(theta)];% \\TODO: code the rotation matrix given theta.
 end
 
 % ----------------------------------------------------------
 function cosCarrier = createCos(rot_x, lambda, psi)
 % ----------------------------------------------------------
 % Returns the 2D cosine carrier. 
-cosCarrier = % \\TODO: Implement the cosine given rot_x, lambda and psi.
+cosCarrier = cos(2*pi*rot_x/lambda+psi);% \\TODO: Implement the cosine given rot_x, lambda and psi.
 
 % Reshape the vector representation to matrix.
 cosCarrier = reshape(cosCarrier, sqrt(length(cosCarrier)), []);
@@ -94,17 +94,19 @@ end
 function sinCarrier = createSin(rot_x, lambda, psi)
 % ----------------------------------------------------------
 % Returns the 2D sine carrier. 
-sinCarrier = % \\TODO: Implement the sine given rot_x, lambda and psi.
+sinCarrier = sin(2*pi*rot_x/lambda+psi);% \\TODO: Implement the sine given rot_x, lambda and psi.
 
 % Reshape the vector representation to matrix.
-sinCarrier = reshape(sinCarrier, sqrt(length(sinCarrier)), []);
+sinCarrier = reshape(, sqrt(length(sinCarrier)), []);
 end
 
 % ----------------------------------------------------------
 function gaussEnv = createGauss(rot_x, rot_y, gamma, sigma)
 % ----------------------------------------------------------
 % Returns the 2D Gaussian Envelope. 
-gaussEnv = % \\TODO: Implement the Gaussian envelope.
+
+% gaussEnv = zeros(1, length(rot_x));% \\TODO: Implement the Gaussian envelope.
+gaussEnv = exp(-(((rot_x.*rot_x)/(2*gamma^2))+((rot_y.*rot_y)/(2*sigma^2))));
 
 % Reshape the vector representation to matrix.
 gaussEnv = reshape(gaussEnv, sqrt(length(gaussEnv)), []);
