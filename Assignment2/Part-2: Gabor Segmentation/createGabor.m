@@ -67,7 +67,13 @@ myGabor(:,:,2) = myGabor_imaginary;
 
 % figure;
 % subplot(121), imshow(myGabor_real,[]);
+% title('real part');
 % subplot(122), imshow(myGabor_imaginary, []);
+% title('imaginary part');
+% annotation('textbox', [.1 .71 .9 .1], ...
+%     'String', sprintf('\\lambda = %f, \\theta = %f, \\sigma = %f', lambda, theta, sigma), ...
+%     'EdgeColor', 'none', ...
+%     'HorizontalAlignment', 'center')
 end
 
 
@@ -97,16 +103,18 @@ function sinCarrier = createSin(rot_x, lambda, psi)
 sinCarrier = sin(2*pi*rot_x/lambda+psi);% \\TODO: Implement the sine given rot_x, lambda and psi.
 
 % Reshape the vector representation to matrix.
-sinCarrier = reshape(, sqrt(length(sinCarrier)), []);
+sinCarrier = reshape(sinCarrier, sqrt(length(sinCarrier)), []);
 end
 
 % ----------------------------------------------------------
 function gaussEnv = createGauss(rot_x, rot_y, gamma, sigma)
 % ----------------------------------------------------------
 % Returns the 2D Gaussian Envelope. 
+sigma_x = sigma;
+sigma_y = sigma/gamma;
 
 % gaussEnv = zeros(1, length(rot_x));% \\TODO: Implement the Gaussian envelope.
-gaussEnv = exp(-(((rot_x.*rot_x)/(2*gamma^2))+((rot_y.*rot_y)/(2*sigma^2))));
+gaussEnv = exp(-(((rot_x.*rot_x)/(2*sigma_x^2))+((rot_y.*rot_y)/(2*sigma_y^2))));
 
 % Reshape the vector representation to matrix.
 gaussEnv = reshape(gaussEnv, sqrt(length(gaussEnv)), []);

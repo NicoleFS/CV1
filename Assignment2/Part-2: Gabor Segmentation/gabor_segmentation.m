@@ -1,10 +1,12 @@
+clc
+
 %% Hyperparameters
 k        = 2;      % number of clusters in k-means algorithm. By default, 
                    % we consider k to be 2 in foreground-background segmentation task.
 image_id = 'Kobi'; % Identifier to switch between input images.
                    % Possible ids: 'Kobi',    'Polar', 'Robin-1'
-                   %               'Robin-2', 'Cows'
-
+                   %               'Robin-2', 'Cows', 'SciencePark'
+                   
 % Misc
 err_msg  = 'Image not available.';
 
@@ -15,7 +17,7 @@ smoothingFlag = true;   %  Set to true to postprocess filter outputs.
 %% Read image
 switch image_id
     case 'Kobi'
-        img = im2double(imread('kobi.png'));
+        img = imread('kobi.png');
         resize_factor = 0.25;
     case 'Polar'
         img = imread('./data/polar-bear-hiding.jpg');
@@ -65,6 +67,8 @@ lambdaMax = hypot(numRows,numCols);
 % (or the central frequency of the carrier signal, which is 1/lambda)
 n = floor(log2(lambdaMax/lambdaMin));
 lambdas = 2.^(0:(n-2)) * lambdaMin;
+% lambdas = 3:0.5:5;
+% lambdas = [5];
 
 % Define the set of orientations for the Gaussian envelope.
 dTheta      = 2*pi/8;                  % \\ the step size
@@ -72,7 +76,7 @@ orientations = 0:dTheta:(pi/2);
 
 % Define the set of sigmas for the Gaussian envelope. Sigma here defines 
 % the standard deviation, or the spread of the Gaussian. 
-sigmas = [1,2]; 
+sigmas = [1, 2];  
 
 % Now you can create the filterbank. We provide you with a MATLAB struct
 % called gaborFilterBank in which we will hold the filters and their
@@ -97,7 +101,7 @@ for ii = 1:length(lambdas)
             % // TODO: Implement the function createGabor() following
             %          the guidelines in the given function template.
             %          ** See createGabor.m for instructions ** //
-            gaborFilterBank(filterNo).filterPairs = createGabor( sigma, theta, lambda, psi, gamma );
+            gaborFilterBank(filterNo).filterPairs = createGabor(sigma, theta, lambda, psi, gamma);
             gaborFilterBank(filterNo).sigma       = sigma;
             gaborFilterBank(filterNo).lambda      = lambda;
             gaborFilterBank(filterNo).theta       = theta;
@@ -131,7 +135,6 @@ fprintf('--------------------------------------\n')
 %            command for more information: doc imfilter. Check the options 
 %            for padding. Find the one that works well. You might want to
 %            explain what works better and why shortly in the report.
-visFlag = true;
 featureMaps = cell(length(gaborFilterBank),1);
 for jj = 1 : length(gaborFilterBank)
     real_out =  imfilter(img_gray, gaborFilterBank(jj).filterPairs(:, :, 1));% \\TODO: filter the grayscale input with real part of the Gabor
@@ -159,7 +162,7 @@ featureMags =  cell(length(gaborFilterBank),1);
 for jj = 1:length(featureMaps)
     real_part = featureMaps{jj}(:,:,1);
     imag_part = featureMaps{jj}(:,:,2);
-    featureMags{jj} = (real_part.*real_part + imag_part.*imag_part).^(0.5);% \\TODO: Compute the magnitude here
+    featureMags{jj} = double(real_part.*real_part + imag_part.*imag_part).^.5;% \\TODO: Compute the magnitude here
     
     % Visualize the magnitude response if you wish.
     if visFlag
@@ -184,7 +187,10 @@ end
 % \\ Hint: doc imfilter, doc fspecial or doc imgaussfilt.  
 features = zeros(numRows, numCols, length(featureMags));
 if smoothingFlag
-    10;
+    for jj = 1:length(featureMags)
+%         features(:, :, jj) = imgaussfilt(featureMags{jj}, gaborFilterBank(jj).sigma);
+        features(:, :, jj) = imgaussfilt(featureMags{jj}, 5);
+    end
     % \\TODO:
     %FOR_LOOP
         % i)  filter the magnitude response with appropriate Gaussian kernels
@@ -210,7 +216,8 @@ features = reshape(features, numRows * numCols, []);
 % \\ Hint: see http://ufldl.stanford.edu/wiki/index.php/Data_Preprocessing
 %          for more information. \\
 
-features = 1;% \\ TODO: i)  Implement standardization on matrix called features. 
+features = bsxfun(@times, bsxfun(@minus, features, mean(features, 2)), 1./std(features, [], 2));% 
+            %\\ TODO: i)  Implement standardization on matrix called features. 
            %          ii) Return the standardized data matrix.
 
 
@@ -218,7 +225,7 @@ features = 1;% \\ TODO: i)  Implement standardization on matrix called features.
 % of the features matrix. It will be useful to diagnose possible problems 
 % with the pipeline and filterbank.  
 coeff = pca(features);
-feature2DImage = reshape(features*coeff(:,1),numRows,numCols);
+feature2DImage = reshape(features*coeff(:,1), numRows, numCols);
 figure(4)
 imshow(feature2DImage,[]), title('Pixel representation projected onto first PC')
 
@@ -229,7 +236,7 @@ imshow(feature2DImage,[]), title('Pixel representation projected onto first PC')
 % \\ Hint-2: use the parameter k defined in the first section when calling
 %            MATLAB's built-in kmeans function.
 tic
-pixLabels = 1;% \\TODO: Return cluster labels per pixel
+pixLabels = kmeans(feature2DImage(:), k);% \\TODO: Return cluster labels per pixel
 ctime = toc;
 fprintf('Clustering completed in %.3f seconds.\n', ctime);
 
