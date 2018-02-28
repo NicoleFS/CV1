@@ -1,7 +1,9 @@
 function imOut = compute_LoG(image, LOG_type)
 
+% read image
 im = imread(image);
 
+% according to entered LoG_type, apply corresponding method
 switch LOG_type
     case 1
         %method 1
