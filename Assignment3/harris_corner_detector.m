@@ -48,4 +48,5 @@ function [H, r, c] = harris_corner_detector(im, threshold, n, kernel_size, sigma
     plot(c, r, 'go');
     title('Image with corners');
     hold off
+   
 end
