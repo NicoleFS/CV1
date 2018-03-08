@@ -1,83 +1,115 @@
-function lucas_kanade(input_image1, input_image2)
+function [Vx, Vy, r, c] = lucas_kanade(im1, im2, r, c)
+% lucas_kanade Applies lucas kanade algorithm to track motion
+%
+% [Vx, Vy, r, c] = lucas_kanade(im1, im2, r, c)
+%   ARGUMENTS
+%       im1             The first image.
+%       im2             The second image.
+%       r (optional)    Rows of interest points.
+%       c (optional)    Colums of interest points.
+%   
+%   OUTPUT
+%       [Vx, Vy, r, c]  Motion in x, motion in y, rows interest points, 
+%                       column interest points
 
+size_w = 15;    % window size
+k = 5;          % Gauss kernel size
+sigma = 0.5;    % Gauss sigma
 
-% check if image is RGB, if so convert to grayscale
-if length(size(imread(input_image1))) == 3
-    input_im1 = rgb2gray(im2double(imread(input_image1)));
-    input_im2 = rgb2gray(im2double(imread(input_image2)));
+if nargin < 3
+    % get sizes of grayscale image
+    [sizex, sizey] = size(im1);
+
+    % Create empty matrices and vectors to store information
+    size_V = floor(sizex/size_w)*floor(sizey/size_w);
+    
+    % Store rows and column of centerpoints for each window
+    r = zeros(1, size_V);
+    c = zeros(1, size_V);
+    
+    % size to where the image can be split into 15x15 windows
+    sizex_temp = sizex - rem(sizex, size_w);
+    sizey_temp = sizey - rem(sizey, size_w);    
+    
+    window = true;
 else
-    input_im1 = im2double(imread(input_image1));
-    input_im2 = im2double(imread(input_image2));
+    size_V = length(r);
+    window = false;
 end
 
-% get sizes of grayscale image
-[sizex, sizey] = size(input_im1);
-
-% size to where the image can be split into 15x15 windows
-sizex_temp = sizex - rem(sizex, 15);
-sizey_temp = sizey - rem(sizey, 15);
-
-% Create empty matrices and vectors to store information
-A = zeros(15*15, 2);
-b = zeros(15*15,1);
-Vx = [];
-Vy = [];
-
-%[Ix Iy] = imgradientxy(input_im1);
+Vx = zeros(1, size_V);
+Vy = zeros(1, size_V);
 
 % Calculate gradients
-G = fspecial('gauss', [15, 15], 1);
+G = fspecial('gauss', [k, k], sigma);
 [Gx, Gy] = imgradientxy(G);
-Ix = imfilter(input_im1, Gx, 'replicate', 'conv');
-Iy = imfilter(input_im1, Gy, 'replicate', 'conv');
+Ix = imfilter(im1, Gx, 'replicate', 'conv');
+Iy = imfilter(im1, Gy, 'replicate', 'conv');
 
-% Store centrepoints for each window
-centrepoints_x = [];
-centrepoints_y = [];
+index = 1;
+if window
+    % Create 15x15 windows and do calculations
+    for i = 1:size_w:sizex_temp
+        for j = 1:size_w:sizey_temp
 
-% Create 15x15 windows and do calculations
-for i = 1:15:sizex_temp
-    for j = 1:15:sizey_temp
-        
-        % Calculate window per image
-        window_1 = input_im1(i:i+14, j:j+14);
-        window_2 = input_im2(i:i+14, j:j+14);
-        
+            % Store centrepoints
+            r(index) = i+floor(size_w/2);
+            c(index) = j+floor(size_w/2);
+            
+            % Get gradient values for this window
+            window_Ix = Ix(i:i+size_w-1, j:j+size_w-1);
+            window_Iy = Iy(i:i+size_w-1, j:j+size_w-1);
+
+            % Store gradients
+            A = [window_Ix(:) window_Iy(:)];
+
+            % Calculate window per image
+            window_1 = im1(i:i+size_w-1, j:j+size_w-1);
+            window_2 = im2(i:i+size_w-1, j:j+size_w-1);
+
+            % Calculate b
+            B = window_1-window_2;
+            b = B(:);
+
+            % Calculate optical flow
+            v = A\b;
+
+            Vx(index) = v(1,1);
+            Vy(index) = v(2,1);
+            index = index + 1;
+        end
+    end
+else
+   for i=1:size_V
+        shift = floor(size_w/2);
+
         % Get gradient values for this window
-        window_Ix = Ix(i:i+14, j:j+14);
-        window_Iy = Iy(i:i+14, j:j+14);
-        
-        % Calculate centrepoint of window
-        centrepoint_x = i+7;
-        centrepoint_y = j+7;
-        
-        % Store centrepoints
-        centrepoints_x = [centrepoints_x centrepoint_x];
-        centrepoints_y = [centrepoints_y centrepoint_y];
-        
+        window_Ix = Ix(r(i)-shift:r(i)+shift-1, c(i)-shift:c(i)+shift-1);
+        window_Iy = Iy(r(i)-shift:r(i)+shift-1, c(i)-shift:c(i)+shift-1);
+
         % Store gradients
-        A(:,1) = window_Ix(:);
-        A(:,2) = window_Iy(:);  
-        
-        % Transpose of A
-        A_t = transpose(A);
-        
+        A = [window_Ix(:) window_Iy(:)];
+
+        % Calculate window per image
+        window_1 = im1(r(i)-shift:r(i)+shift-1, c(i)-shift:c(i)+shift-1);
+        window_2 = im2(r(i)-shift:r(i)+shift-1, c(i)-shift:c(i)+shift-1);
+
         % Calculate b
         B = window_1-window_2;
         b = B(:);
-        
-        % Calculate optical flow
-        v = inv(A_t*A)*A_t*b;
-        Vx = [Vx v(1,1)];
-        Vy = [Vy v(2,1)];
-        
-    end
-end
 
+        % Calculate optical flow
+        v = A\b;
+
+        Vx(i) = v(1,1);
+        Vy(i) = v(2,1);
+   end
+end
+    
 figure;
-imshow(input_image1);
+imshow(im1);
 hold on;
-q = quiver(centrepoints_y, centrepoints_x, Vx, Vy);
+q = quiver(c, r, Vx, Vy);
 q.Color = 'red';
 
 end
