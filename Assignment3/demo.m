@@ -30,15 +30,57 @@ end
 im1 = rgb2gray(im2double(imread('sphere1.ppm')));
 im2 = rgb2gray(im2double(imread('sphere2.ppm')));
 
-center_points = 8:15:200;
-r = [];
-c = [];
-for i=1:length(center_points)
-    for j=1:length(center_points)
-       r = [r center_points(i)];
-       c = [c center_points(j)];
+[Vx, Vy, r, c] = lucas_kanade(im1, im2);
+
+%% Now use rows and columns as input instead of moving window
+% Should give the same result as the one above
+[Vx, Vy, ~, ~] = lucas_kanade(im1, im2, r, c);
+
+%% Video pingpong
+threshold = 0.09;
+n = 3;
+k = 5;
+sigma = .5;
+for i=1:52
+    im1_f = sprintf('pingpong/000%.0f.jpeg', i-1);
+    im2_f = sprintf('pingpong/000%.0f.jpeg', i);
+    if i == 10
+        im1_f = sprintf('pingpong/000%.0f.jpeg', i-1);
+        im2_f = sprintf('pingpong/00%.0f.jpeg', i);
+    elseif i > 10
+        im1_f = sprintf('pingpong/00%.0f.jpeg', i-1);
+        im2_f = sprintf('pingpong/00%.0f.jpeg', i);
     end
+    
+    im1 = rgb2gray(im2double(imread(im1_f)));
+    im2 = rgb2gray(im2double(imread(im2_f)));
+    
+    [H, r, c] = harris_corner_detector(im1, threshold, n, k, sigma, false);
+    [Vx, Vy, ~, ~] = lucas_kanade(im1, im2, r, c);
+    pause(0.5);
 end
 
-% [Vx, Vy, r, c] = lucas_kanade(im1, im2);
-[Vx, Vy, ~, ~] = lucas_kanade(im1, im2, r, c);
+%% Video person toy
+close all
+threshold = 0.011;
+n = 3;
+k = 5;
+sigma = .5;
+for i=2:104
+    im1_f = sprintf('person_toy/0000000%.0f.jpg', i-1);
+    im2_f = sprintf('person_toy/0000000%.0f.jpg', i);
+    if i == 10
+        im1_f = sprintf('person_toy/0000000%.0f.jpg', i-1);
+        im2_f = sprintf('person_toy/000000%.0f.jpg', i);
+    elseif i > 10
+        im1_f = sprintf('person_toy/000000%.0f.jpg', i-1);
+        im2_f = sprintf('person_toy/000000%.0f.jpg', i);
+    end
+    
+    im1 = rgb2gray(im2double(imread(im1_f)));
+    im2 = rgb2gray(im2double(imread(im2_f)));
+    
+    [H, r, c] = harris_corner_detector(im1, threshold, n, k, sigma, false);
+    [Vx, Vy, ~, ~] = lucas_kanade(im1, im2, r, c);
+    pause(0.5);
+end

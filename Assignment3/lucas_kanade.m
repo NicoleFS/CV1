@@ -16,16 +16,16 @@ size_w = 15;    % window size
 k = 5;          % Gauss kernel size
 sigma = 0.5;    % Gauss sigma
 
-if nargin < 3
-    % get sizes of grayscale image
-    [sizex, sizey] = size(im1);
+% get sizes of grayscale image
+[sizex, sizey] = size(im1);
 
+if nargin < 3
     % Create empty matrices and vectors to store information
     size_V = floor(sizex/size_w)*floor(sizey/size_w);
     
     % Store rows and column of centerpoints for each window
-    r = zeros(1, size_V);
-    c = zeros(1, size_V);
+    r = zeros(size_V, 1);
+    c = zeros(size_V, 1);
     
     % size to where the image can be split into 15x15 windows
     sizex_temp = sizex - rem(sizex, size_w);
@@ -34,11 +34,19 @@ if nargin < 3
     window = true;
 else
     size_V = length(r);
+    shift = floor(size_w/2);
+    
+    % Add padding
+    im1 = padarray(im1, [shift shift], 'replicate', 'both');
+    im2 = padarray(im2, [shift shift], 'replicate', 'both');
+    r = r + shift;
+    c = c + shift;
+    
     window = false;
 end
 
-Vx = zeros(1, size_V);
-Vy = zeros(1, size_V);
+Vx = zeros(size_V, 1);
+Vy = zeros(size_V, 1);
 
 % Calculate gradients
 G = fspecial('gauss', [k, k], sigma);
@@ -80,19 +88,23 @@ if window
         end
     end
 else
-   for i=1:size_V
-        shift = floor(size_w/2);
-
+   for i=1:size_V        
+        % Window extent
+        r_f = r(i)-shift;
+        r_t = r(i)+shift-1;
+        c_f = c(i)-shift;
+        c_t = c(i)+shift-1;
+        
         % Get gradient values for this window
-        window_Ix = Ix(r(i)-shift:r(i)+shift-1, c(i)-shift:c(i)+shift-1);
-        window_Iy = Iy(r(i)-shift:r(i)+shift-1, c(i)-shift:c(i)+shift-1);
+        window_Ix = Ix(r_f:r_t, c_f:c_t);
+        window_Iy = Iy(r_f:r_t, c_f:c_t);
 
         % Store gradients
         A = [window_Ix(:) window_Iy(:)];
 
         % Calculate window per image
-        window_1 = im1(r(i)-shift:r(i)+shift-1, c(i)-shift:c(i)+shift-1);
-        window_2 = im2(r(i)-shift:r(i)+shift-1, c(i)-shift:c(i)+shift-1);
+        window_1 = im1(r_f:r_t, c_f:c_t);
+        window_2 = im2(r_f:r_t, c_f:c_t);
 
         % Calculate b
         B = window_1-window_2;
@@ -104,12 +116,17 @@ else
         Vx(i) = v(1,1);
         Vy(i) = v(2,1);
    end
+   % Remove padding
+   im1 = im1(shift:sizex+shift, shift:sizey+shift);
+   r = r - shift;
+   c = c - shift;
 end
-    
+
 figure;
 imshow(im1);
-hold on;
+hold on
 q = quiver(c, r, Vx, Vy);
 q.Color = 'red';
+hold off
 
 end
