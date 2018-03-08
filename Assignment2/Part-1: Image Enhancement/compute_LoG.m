@@ -10,7 +10,7 @@ switch LOG_type
         im = imfilter(im, gauss2D(0.5, 5));
         lap = fspecial('laplacian');
         imOut = imfilter(im, lap);
-
+        
     case 2
         %method 2
         LoG = fspecial('log',5,0.5);
