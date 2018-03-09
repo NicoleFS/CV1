@@ -7,6 +7,7 @@ function [Vx, Vy, r, c] = lucas_kanade(im1, im2, r, c)
 %       im2             The second image.
 %       r (optional)    Rows of interest points.
 %       c (optional)    Colums of interest points.
+%       fid (optional)  Figure id
 %   
 %   OUTPUT
 %       [Vx, Vy, r, c]  Motion in x, motion in y, rows interest points, 
@@ -121,12 +122,5 @@ else
    r = r - shift;
    c = c - shift;
 end
-
-figure;
-imshow(im1);
-hold on
-q = quiver(c, r, Vx, Vy);
-q.Color = 'red';
-hold off
 
 end
