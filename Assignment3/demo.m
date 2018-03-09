@@ -26,7 +26,7 @@ for angle=0:33:180
    [H, r, c] = harris_corner_detector(im_rot(:, :, 1), threshold, n, k, sigma);
 end
 
-%% Lucas canade
+%% Lucas canade sphere
 im1_c = im2double(imread('sphere1.ppm'));
 im1 = rgb2gray(im1_c);
 im2 = rgb2gray(im2double(imread('sphere2.ppm')));
@@ -47,6 +47,32 @@ hold off
 
 figure;
 imshow(im1_c);
+hold on
+q = quiver(c, r, Vx, Vy);
+q.Color = 'red';
+hold off
+
+%% Lucas Kanade synth
+
+im_synth1 = im2double(imread('synth1.pgm'));
+im_synth2 = im2double(imread('synth2.pgm'));
+
+[Vx, Vy, r, c] = lucas_kanade(im_synth1, im_synth2);
+    
+figure;
+imshow(im_synth1);
+hold on
+q = quiver(c, r, Vx, Vy);
+q.Color = 'red';
+hold off
+
+%% Now use rows and columns as input instead of moving window
+% This is approach is needed for the last part.
+% Should give the same result as the one above
+[Vx, Vy, ~, ~] = lucas_kanade(im_synth1, im_synth2, r, c);
+
+figure;
+imshow(im_synth1);
 hold on
 q = quiver(c, r, Vx, Vy);
 q.Color = 'red';
