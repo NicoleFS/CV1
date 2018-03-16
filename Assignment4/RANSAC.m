@@ -1,5 +1,5 @@
 function [x_best, im_trans, corners_trans] = RANSAC(im1, im2, threshold, n, p, r)
-% RANSAC transformas image1 to image 2.
+% RANSAC transforms image1 to image 2.
 %
 % [x_best, im_trans, corners_trans] = RANSAC(im1, im2, threshold, n, p, r)
 %   im1             First grey scale image.
@@ -65,7 +65,7 @@ for i=1:n
         max_inl = inliers;
     end
 end
-fprintf('number of inliers %i/%i\n', inliers, p)
+fprintf('Number of inliers %i/%i\n', inliers, p)
 
 % Transform the image
 % Define the transformed image
