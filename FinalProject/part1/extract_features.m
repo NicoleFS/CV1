@@ -13,59 +13,61 @@ if color_scheme == "gray"
     end
     
     if type_of_sift == "dense"
-        [frames, descriptors] = vl_dsift(image, 10);
+        [~, descriptors] = vl_dsift(image, 10);
     elseif type_of_sift == "normal"
-        [frames, descriptors] = vl_sift(image);
+        [~, descriptors] = vl_sift(image);
     end
 
 elseif color_scheme == "RGB"
     if sizez == 3
+        temp_im = single(rgb2gray(input_im));
+        input_im = single(input_im);
         if type_of_sift == "dense"
-            [temp_frames1, temp_descriptors1] = vl_dsift(input_im(:,:,1), 10);
-            [temp_frames2, temp_descriptors2] = vl_dsift(input_im(:,:,2), 10);
-            [temp_frames3, temp_descriptors3] = vl_dsift(input_im(:,:,3), 10);
+            [~, descriptors] = vl_phow(input_im, 'step', 10, 'color','rgb');            
         elseif type_of_sift == "normal"
-            [temp_frames1, temp_descriptors1] = vl_sift(input_im(:,:,1), 10);
-            [temp_frames2, temp_descriptors2] = vl_sift(input_im(:,:,2), 10);
-            [temp_frames3, temp_descriptors3] = vl_sift(input_im(:,:,3), 10);
+            [temp_frames, ~] = vl_sift(temp_im);
+            [~, temp_descriptors1] = vl_sift(input_im(:,:,1), 'frames', temp_frames);
+            [~, temp_descriptors2] = vl_sift(input_im(:,:,2), 'frames', temp_frames);
+            [~, temp_descriptors3] = vl_sift(input_im(:,:,3), 'frames', temp_frames);
+            descriptors = cat(1, temp_descriptors1, temp_descriptors2, temp_descriptors3);
+        end
+        
+    end    
         
     
 elseif color_scheme == "rgb"
     if sizez == 3
+        temp_im = single(rgb2gray(input_im));
+        input_im = single(rgb2normedrgb(input_im));
         if type_of_sift == "dense"
-            [temp_frames1, temp_descriptors1] = vl_dsift(input_im(:,:,1), 10);
-            [temp_frames2, temp_descriptors2] = vl_dsift(input_im(:,:,2), 10);
-            [temp_frames3, temp_descriptors3] = vl_dsift(input_im(:,:,3), 10);
+            [~, descriptors] = vl_phow(input_im, 'step', 10, 'color', 'rgb');
         elseif type_of_sift == "normal"
-            [temp_frames1, temp_descriptors1] = vl_sift(input_im(:,:,1), 10);
-            [temp_frames2, temp_descriptors2] = vl_sift(input_im(:,:,2), 10);
-            [temp_frames3, temp_descriptors3] = vl_sift(input_im(:,:,3), 10);
+            [temp_frames, ~] = vl_sift(temp_im);
+            [~, temp_descriptors1] = vl_sift(input_im(:,:,1), 'frames', temp_frames);
+            [~, temp_descriptors2] = vl_sift(input_im(:,:,2), 'frames', temp_frames);
+            [~, temp_descriptors3] = vl_sift(input_im(:,:,3), 'frames', temp_frames);
+            descriptors = cat(1, temp_descriptors1, temp_descriptors2, temp_descriptors3);
         end
+        
     end
     
 elseif color_scheme == "opponent"
     if sizez == 3
+        temp_im = single(rgb2gray(input_im));
+        input_im = single(rgb2opponent(input_im));
         if type_of_sift == "dense"
-            [temp_frames1, temp_descriptors1] = vl_dsift(input_im(:,:,1), 10);
-            [temp_frames2, temp_descriptors2] = vl_dsift(input_im(:,:,2), 10);
-            [temp_frames3, temp_descriptors3] = vl_dsift(input_im(:,:,3), 10);
+            [~, descriptors] = vl_phow(input_im, 'step', 10, 'color', 'opponent');
         elseif type_of_sift == "normal"
-            [temp_frames1, temp_descriptors1] = vl_sift(input_im(:,:,1), 10);
-            [temp_frames2, temp_descriptors2] = vl_sift(input_im(:,:,2), 10);
-            [temp_frames3, temp_descriptors3] = vl_sift(input_im(:,:,3), 10);
+            [temp_frames, ~] = vl_sift(temp_im);
+            [~, temp_descriptors1] = vl_sift(input_im(:,:,1), 'frames', temp_frames);
+            [~, temp_descriptors2] = vl_sift(input_im(:,:,2), 'frames', temp_frames);
+            [~, temp_descriptors3] = vl_sift(input_im(:,:,3), 'frames', temp_frames);
+            descriptors = cat(1, temp_descriptors1, temp_descriptors2, temp_descriptors3);
         end
+        
     end
             
     
 end
-
-
-%if type_of_sift == "dense"
-%    [frames, descriptors] = vl_dsift(image, 10);
-%elseif type_of_sift == "normal"
-%    [frames, descriptors] = vl_sift(image);
-%end
-
-
 
 end
