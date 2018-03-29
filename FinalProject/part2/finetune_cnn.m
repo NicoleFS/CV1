@@ -5,7 +5,7 @@ function [net, info, expdir] = finetune_cnn(varargin)
 run(fullfile(fileparts(mfilename('fullpath')), ...
   'matconvnet-1.0-beta25', 'matlab', 'vl_setupnn.m')) ;
 
-opts.modelType = 'lenet_bs50_lr505020' ;
+opts.modelType = 'lenet_bs100_lr202010' ;
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
 opts.expDir = fullfile('data', ...
