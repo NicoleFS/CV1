@@ -1,10 +1,11 @@
 function [net, info, expdir] = finetune_cnn(varargin)
 
+
 %% Define options
 run(fullfile(fileparts(mfilename('fullpath')), ...
-  '..', '..', '..', 'matlab', 'vl_setupnn.m')) ;
+  'matconvnet-1.0-beta25', 'matlab', 'vl_setupnn.m')) ;
 
-opts.modelType = 'lenet' ;
+opts.modelType = 'lenet_bs100_lr202010' ;
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
 opts.expDir = fullfile('data', ...
@@ -18,11 +19,9 @@ opts.contrastNormalization = true ;
 opts.networkType = 'simplenn' ;
 opts.train = struct() ;
 opts = vl_argparse(opts, varargin) ;
-if ~isfield(opts.train, 'gpus'), opts.train.gpus = []; end;
-
-opts.train.gpus = [1];
-
-
+% if ~isfield(opts.train, 'gpus') opts.train.gpus = []; end;
+% 
+% opts.train.gpus = [];
 
 %% update model
 
@@ -75,6 +74,7 @@ if rand > 0.5, images=fliplr(images) ; end
 
 end
 
+
 % -------------------------------------------------------------------------
 function imdb = getCaltechIMDB()
 % -------------------------------------------------------------------------
@@ -83,7 +83,31 @@ classes = {'airplanes', 'cars', 'faces', 'motorbikes'};
 splits = {'train', 'test'};
 
 %% TODO: Implement your loop here, to create the data structure described in the assignment
+image_folder = '../Caltech4/ImageData/';
 
+data = [];
+labels = [];
+sets = [];
+for c = 1:numel(classes)
+    for s = 1:numel(splits)
+        f = strcat(image_folder, classes{c}, '_', splits{s});
+        images = loadImages(f, '*.jpg');
+        result = imresize3(im2single(images{1}), [32, 32, 3]);
+        N = length(images);
+        for i = 2:N
+            if length(size(images{i})) == 3
+                im = imresize3(im2single(images{i}), [32, 32, 3]);
+            else
+                im = imresize(im2single(images{i}), [32, 32]);
+                im = cat(3, im, im, im);
+            end
+            result = cat(4, result, im);
+        end
+        data = cat(4, data, result);
+        labels = [labels c*ones(1, N)];
+        sets = [sets, s*ones(1, N)];
+    end
+end
 
 %%
 % subtract mean
@@ -102,3 +126,25 @@ imdb.images.labels = imdb.images.labels(perm);
 imdb.images.set = imdb.images.set(perm);
 
 end
+
+function Seq = loadImages(imgPath, imgType)
+    %imgPath = 'path/to/images/folder/';
+    %imgType = '*.png'; % change based on image type
+    full_path = fullfile(pwd, imgPath);
+    images  = dir(strcat(full_path, '/', imgType));
+    N = length(images);
+
+    % check images
+    if( ~exist(imgPath, 'dir') || N < 1 )
+        disp('Directory not found or no matching images found.');
+    end
+
+    % preallocate cell
+    Seq{N,1} = [];
+
+    for idx = 1:N
+        im_path = strcat(full_path, '/', images(idx).name);
+        Seq{idx} = imread(im_path);
+    end
+end
+
