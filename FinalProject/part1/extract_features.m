@@ -14,7 +14,7 @@ if color_scheme == "gray"
     
     if type_of_sift == "dense"
         [~, descriptors] = vl_dsift(image, 'step', 10);
-    elseif type_of_sift == "normal"
+    elseif type_of_sift == "keypoint"
         [~, descriptors] = vl_sift(image);
     end
 
@@ -35,7 +35,7 @@ else
             
             [~, descriptors] = vl_phow(input_im, 'step', 10, 'color','rgb'); 
             
-        elseif type_of_sift == "normal"
+        elseif type_of_sift == "keypoint"
             
             [temp_frames, ~] = vl_sift(temp_im);
             [~, temp_descriptors1] = vl_sift(input_im(:,:,1), 'frames', temp_frames);
