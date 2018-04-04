@@ -34,6 +34,7 @@ end
 
 
 [centers, assignments] = vl_ikmeans(features, 400);
+
 %%
 
 %labels
@@ -132,7 +133,6 @@ for i = 1:length(paths)
         
         image_features = extract_features(current_image, "gray", "normal");
 
-        
         [image_assignment] = vl_ikmeanspush(image_features, centers);
 
         image_hist = hist(double(image_assignment), 400, 'Normalization', 'count');
@@ -150,19 +150,24 @@ test_data = sparse(test_data);
 [prediction_motorbike, accuracy_motorbike, confidence_motorbike] = predict(labels_motorbike_test, test_data, motorbike_trained);
 
 
+%% Mean average precision
 
+meanAP(confidence_airplane, labels_airplane_test, direction)
+meanAP(confidence_car, labels_car_test, direction)
+meanAP(confidence_face, labels_face_test, direction)
+meanAP(confidence_motorbike, labels_motorbike_test, direction)
 
-
-
-
-    
-
-
-
-
-
-
-
-
+%%
+function [ap] = meanAP(confidence, labels)
+    ap = 0;
+    n = 50;
+    order = sortrows([confidence, labels], 'descend');
+    correct = 0;
+    for i=1:size(order, 1)
+        correct = correct + order(i, 2);
+        ap = ap + order(i,2)*correct/i;
+    end
+    ap = ap/n;
+end
 
 
