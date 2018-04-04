@@ -1,7 +1,7 @@
 %% Parameters
 
 % amount of images per category to compute centroids
-images_kmeans = 50;
+images_kmeans = 100;
 
 % amount of images per category to train SVM model on
 images_train = 50;
