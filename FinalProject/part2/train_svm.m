@@ -25,16 +25,16 @@ function [accuracy] = get_nn_accuracy(net, data)
 counter = 0;
 for i = 1:size(data.images.data, 4)
     
-if(data.images.set(i)==2)    
-res = vl_simplenn(net, data.images.data(:, :,:, i));
+    if(data.images.set(i)==2)    
+        res = vl_simplenn(net, data.images.data(:, :,:, i));
 
-[~, estimclass] = max(res(end).x);
+        [~, estimclass] = max(res(end).x);
 
-if(estimclass == data.images.labels(i))
-    counter = counter+1;
-end
+        if(estimclass == data.images.labels(i))
+            counter = counter+1;
+        end
 
-end
+    end
 
 end
 
