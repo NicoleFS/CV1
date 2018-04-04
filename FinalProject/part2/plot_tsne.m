@@ -13,47 +13,52 @@ nets.fine_tuned.layers{end}.type = 'softmax';
 
 %%
 predictions = [];
+labels = [];
 for i = 1:size(data.images.data, 4)  
     res = vl_simplenn(nets.pre_trained, data.images.data(:, :,:, i));
-    [~, estimclass] = max(res(end).x);
-    predictions = [predictions; estimclass];
+    predict = res(11).x;
+    predict = reshape(predict, 1, 64);
+    predictions = [predictions; predict];
+    labels = [labels; data.images.labels(i)];
 end
 
 %%
 ydata = tsne(predictions);
-figure(2);
-plot(ydata(:, 1), ydata(:, 2), '.');
+% figure(2);
+% plot(ydata(:, 1), ydata(:, 2), '.');
 % title('Pretrained, without labels');
 
-% figure;
-% ydata = tsne(predictions, data.images.labels);
-% figure;
-% plot(ydata(:, 1), ydata(:, 2), '.');
-% title('Labels');
+figure;
+ydata = tsne(predictions, labels);
+figure;
+plot(ydata(:, 1), ydata(:, 2), '.');
+title('Labels');
 
 F = getframe(gca);
 imwrite(F.cdata, 'figures/tsne-pre.png');
 
 %%
 predictions = [];
+labels = [];
 for i = 1:size(data.images.data, 4)  
     res = vl_simplenn(nets.fine_tuned, data.images.data(:, :,:, i));
-    [~, estimclass] = max(res(end).x);
-    predictions = [predictions; estimclass];
+    predict = res(11).x;
+    predict = reshape(predict, 1, 64);
+    predictions = [predictions; predict];
+    labels = [labels; data.images.labels(i)];
 end
-disp(predictions)
 
 %%
 ydata = tsne(predictions);
-figure(1);
-plot(ydata(:, 1), ydata(:, 2), '.');
+% figure(1);
+% plot(ydata(:, 1), ydata(:, 2), '.');
 % title('Fine tuned, without labels');
 % 
-% figure;
-% ydata = tsne(predictions, data.images.labels);
-% figure;
-% plot(ydata(:, 1), ydata(:, 2), '.');
-% title('Labels');
+figure;
+ydata = tsne(predictions, labels);
+figure;
+plot(ydata(:, 1), ydata(:, 2), '.');
+title('Labels');
 
 F = getframe(gca);
 imwrite(F.cdata, 'figures/tsne-fine.png');
