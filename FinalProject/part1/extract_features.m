@@ -43,7 +43,8 @@ else
             [~, temp_descriptors3] = vl_sift(input_im(:,:,3), 'frames', temp_frames);
             descriptors = cat(1, temp_descriptors1, temp_descriptors2, temp_descriptors3);
         end
-        
+    else
+        descriptors = [];
     end 
 end
 
