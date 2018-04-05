@@ -18,12 +18,11 @@ vocabulary_size = 400;
 
 
 % colorspace and sift-type for feature extraction
-color = "gray";
+color = "RGB";
 sift_type = "keypoint";
 
 % path to imagefolder
 path = '../Caltech4/ImageData/';
-
 
 %% Feature extraction and k-means
 
