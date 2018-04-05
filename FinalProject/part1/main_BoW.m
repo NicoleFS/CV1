@@ -18,8 +18,8 @@ vocabulary_size = 400;
 
 
 % colorspace and sift-type for feature extraction
-color = "RGB";
-sift_type = "keypoint";
+color = "opponent";
+sift_type = "dense";
 
 % path to imagefolder
 path = '../Caltech4/ImageData/';
@@ -54,6 +54,7 @@ path = '../Caltech4/ImageData/';
 % Calculate features to do k-means on
 features = obtain_features_kmeans(path_air, path_car, path_face, path_motor...
     , imagenames, images_kmeans, color, sift_type);
+
 
 % Calculate centroids and assignments with k-means
 [centers, assignments] = vl_ikmeans(features, vocabulary_size);

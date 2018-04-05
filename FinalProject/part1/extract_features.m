@@ -36,7 +36,7 @@ else
     if color_scheme == "RGB"            
         input_im = single(input_im);
     elseif color_scheme == "rgb"
-        input_im = single(rgb2normedrgb(input_im));
+        input_im = single(rgb2normedrgb(im2double(input_im)));
     elseif color_scheme == "opponent"
         input_im = single(rgb2opponent(input_im));
     end
