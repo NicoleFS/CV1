@@ -1,173 +1,143 @@
-%TO DO       
-%
+clc
+clearvars
+close all
 
-% inladen map met images
-% subset van de images pakken
-% k-means
+run vlfeat-0.9.21/toolbox/vl_setup.m
+addpath liblinear-2.1/matlab
 
+%% Parameters
 
-images_kmeans = 50;
-images_classify = 50;
+% amount of images per category to train SVM model on
+settings.images_train = 50;
 
-path = '../Caltech4/ImageData/';
+% % amount of images per category for testing
+% settings.images_test = 50;
 
-[path_to_airplanes, path_to_cars, path_to_faces, path_to_motorbikes, imagenames] = load_images(path, 'train');
+% amount of images per category to compute centroids
+settings.images_kmeans = 100;
+% amount of centroids for k-means
+settings.vocab_size = 400;
 
-features = [];
+% colorspace and sift-type for feature extraction
+settings.color_scheme = "gray";
+settings.sift_type = "keypoint";
 
-for i = 1:images_kmeans
-    
-    image_title = imagenames(i).name;
-    
-    A = extract_features(strcat(path_to_airplanes, image_title), "gray", "normal");
-    B = extract_features(strcat(path_to_cars, image_title), "gray", "normal");
-    C = extract_features(strcat(path_to_faces, image_title), "gray", "normal");
-    D = extract_features(strcat(path_to_motorbikes, image_title), "gray", "normal");
-    
-    if i == 1
-        features = A;
-        features = cat(2, features, B, C, D);
-    else
-        features = cat(2, features, A, B, C, D);
-    end
+% path to imagefolder
+settings.image_folder = '../Caltech4/ImageData/';
+
+% structure with links to all images
+imdb = getCaltechIMDB(settings.image_folder);
+
+%% Get K-means centers
+kmeans_centers = get_kmeans_centers(imdb, settings);
+
+%% Preparing data set for SVM
+% Computes train and test for the SVM, based on the kmeans centroids
+[trainset, testset] = get_svm_data(imdb, kmeans_centers, settings);
+
+%% SVM models
+% Creates a SVM model for each class
+models = [];
+direction = 'descend';
+for c = 1:numel(imdb.meta.classes)
+    labels = double(trainset.labels == c);
+    best = train(labels, trainset.features, '-C -s 0 -q');
+    model = train(labels, trainset.features, sprintf('-c %f -s 0 -q', best(1))); % use the same solver: -s 0
+    models = [models model];
+end
+
+%% Predict with trained SVM
+% Does a prediction for all test images
+aps = [];
+direction = 'descend';
+for c = 1:numel(imdb.meta.classes)
+    labels = double(testset.labels == c);
+    [prediction, accuracy, confidence] = predict(labels, testset.features, models(c), '-b 1 -q');
+%     if c > 1
+%         direction = 'ascend';
+%     end
+    ap = average_precision(confidence(:, 1), labels, sum(labels), direction);
+    aps = [aps ap];
+%     fprintf('Class %s has an average precision of %.5f\n', imdb.meta.classes{c}, ap);
+end
+fprintf('Mean average precision: %.5f\n', mean(aps));
+
+%% Helper functions
+
+function [kmeans_centers] = get_kmeans_centers(imdb, settings)
+%% Feature extraction
+% Extracts SIFT features of some images to be used for k-means 
+features = obtain_features_kmeans(imdb, settings);
+
+%% K-means
+% Calculates K-means centroids.
+[kmeans_centers, ~] = vl_ikmeans(features, settings.vocab_size);
+
+%% Save model
+save(sprintf('%.0fim_%.0fvoc_%s_%s.mat', settings.images_kmeans, settings.vocab_size, settings.color_scheme, settings.sift_type), 'kmeans_centers');
+end
+
+function [ap] = average_precision(confidence, labels, n, direction)
+if nargin < 4
+    direction = 'descend';
+end
+% Gets the average precision
+ap = 0;
+ordered = sortrows([confidence, labels], direction);
+correct = 0;
+for i=1:size(ordered, 1)
+    correct = correct + ordered(i, 2);
+    ap = ap + ordered(i, 2)*correct/i;
+end
+ap = ap/n;
 end
 
 
-[centers, assignments] = vl_ikmeans(features, 400);
+function imdb = getCaltechIMDB(image_folder)
+% Prepare the imdb structure, returns image data with mean image subtracted
+classes = {'cars', 'faces', 'motorbikes', 'airplanes'};
+splits = {'train', 'test'};
 
-%%
-
-%labels
-labels_airplane = zeros(images_classify*4,1);
-labels_car = zeros(images_classify*4,1);
-labels_face = zeros(images_classify*4,1);
-labels_motorbike = zeros(images_classify*4,1);
-
-index_labels = 0;
-train_data = [];
-
-paths = ["airplanes_train/", "cars_train/", "faces_train/", "motorbikes_train/"];
-
-for i = 1:length(paths)
-    
-    current_path = strcat(path, char(paths(i)));
-    
-    for j = images_kmeans+1:images_kmeans+images_classify
-    
-        index_labels = index_labels + 1;
-        
-        image_title = imagenames(j).name;
-        
-        current_image = strcat(current_path, image_title);
-        
-        if paths(i) == "airplanes_train/"
-            labels_airplane(index_labels) = 1;
-        elseif paths(i) == "cars_train/"
-            labels_car(index_labels) = 1;
-        elseif paths(i) == "faces_train/"
-            labels_face(index_labels) = 1;
-        elseif paths(i) == "motorbikes_train/"
-            labels_motorbike(index_labels) = 1;
+paths = string();
+paths_index = 1;
+labels = [];
+sets = [];
+for c = 1:numel(classes)
+    for s = 1:numel(splits)
+        f = strcat(image_folder, classes{c}, '_', splits{s});
+        full_path = fullfile(pwd, f);
+        images = dir(strcat(full_path, '/', '*.jpg'));
+        for i = 1:numel(images)
+            im_path = strcat(images(i).folder, '/', images(i).name);
+            paths{paths_index} = im_path;
+            paths_index = paths_index + 1;
         end
-        
-        image_features = extract_features(current_image, "gray", "normal");
-
-        
-        [image_assignment] = vl_ikmeanspush(image_features, centers);
-
-        
-        image_hist = hist(double(image_assignment), 400, 'Normalization', 'count');
-        train_data = [train_data ; image_hist];
-    
+        labels = [labels c*ones(1, numel(images))];
+        sets = [sets s*ones(1, numel(images))];
     end
-    
 end
-
-
-train_data = sparse(train_data);
-
-%trained models
-
-airplane_trained = train(labels_airplane, train_data);
-car_trained = train(labels_car, train_data);
-face_trained = train(labels_face, train_data);
-motorbike_trained = train(labels_motorbike, train_data);
 
 %%
 
-labels_airplane_test = zeros(images_classify*4,1);
-labels_car_test = zeros(images_classify*4,1);
-labels_face_test = zeros(images_classify*4,1);
-labels_motorbike_test = zeros(images_classify*4,1);
+imdb.images.paths = paths.' ;
+imdb.images.labels = single(labels).' ;
+imdb.images.set = sets.';
+imdb.meta.sets = {'train', 'val'} ;
+imdb.meta.classes = classes;
 
-index_labels = 0;
-test_data = [];
+% perm = randperm(numel(imdb.images.labels));
+% imdb.images.data = imdb.images.paths(perm);
+% imdb.images.labels = imdb.images.labels(perm);
+% imdb.images.set = imdb.images.set(perm);
 
-images_used = images_kmeans + images_classify;
-images_testing = 50;
-
-
-paths = ["airplanes_train/", "cars_train/", "faces_train/", "motorbikes_train/"];
-
-for i = 1:length(paths)
-    
-    current_path = strcat(path, char(paths(i)));
-    
-    for j = images_used+1:images_used+images_testing
-    
-        index_labels = index_labels + 1;
-        
-        image_title = imagenames(j).name;
-        
-        current_image = strcat(current_path, image_title);
-        
-        if paths(i) == "airplanes_train/"
-            labels_airplane_test(index_labels) = 1;
-        elseif paths(i) == "cars_train/"
-            labels_car_test(index_labels) = 1;
-        elseif paths(i) == "faces_train/"
-            labels_face_test(index_labels) = 1;
-        elseif paths(i) == "motorbikes_train/"
-            labels_motorbike_test(index_labels) = 1;
-        end
-        
-        image_features = extract_features(current_image, "gray", "normal");
-
-        [image_assignment] = vl_ikmeanspush(image_features, centers);
-
-        image_hist = hist(double(image_assignment), 400, 'Normalization', 'count');
-        test_data = [test_data ; image_hist];
-    
-    end
-    
 end
 
-test_data = sparse(test_data);
-
-[prediction_airplane, accuracy_airplane, confidence_airplane] = predict(labels_airplane_test, test_data, airplane_trained);
-[prediction_car, accuracy_car, confidence_car] = predict(labels_car_test, test_data, car_trained);
-[prediction_face, accuracy_face, confidence_face] = predict(labels_face_test, test_data, face_trained);
-[prediction_motorbike, accuracy_motorbike, confidence_motorbike] = predict(labels_motorbike_test, test_data, motorbike_trained);
 
 
-%% Mean average precision
 
-meanAP(confidence_airplane, labels_airplane_test, direction)
-meanAP(confidence_car, labels_car_test, direction)
-meanAP(confidence_face, labels_face_test, direction)
-meanAP(confidence_motorbike, labels_motorbike_test, direction)
 
-%%
-function [ap] = meanAP(confidence, labels)
-    ap = 0;
-    n = 50;
-    order = sortrows([confidence, labels], 'descend');
-    correct = 0;
-    for i=1:size(order, 1)
-        correct = correct + order(i, 2);
-        ap = ap + order(i,2)*correct/i;
-    end
-    ap = ap/n;
-end
+
+
+
 
 
