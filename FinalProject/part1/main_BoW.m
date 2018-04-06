@@ -2,6 +2,7 @@ clc
 clearvars
 close all
 
+
 %%
 run vlfeat-0.9.21/toolbox/vl_setup.m
 addpath liblinear-2.1/matlab
@@ -20,8 +21,8 @@ settings.images_kmeans = 100;
 settings.vocab_size = 400;
 
 % colorspace and sift-type for feature extraction
-settings.color_scheme = "rgb";
-settings.sift_type = "keypoint";
+settings.color_scheme = "RGB";
+settings.sift_type = "dense";
 
 % path to imagefolder
 settings.image_folder = '../Caltech4/ImageData/';
@@ -40,6 +41,7 @@ end
 
 % Shuffle the kmeans centers
 % kmeans_centers = kmeans_centers(:, randperm(size(kmeans_centers, 2)));
+
 
 %% Preparing data set for SVM
 % Computes train and test for the SVM, based on the kmeans centroids
