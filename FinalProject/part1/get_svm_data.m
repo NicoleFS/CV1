@@ -48,9 +48,9 @@ for c = 1:numel(imdb.meta.classes)
     end
 end
 
-% zero meain features
-traindata = (traindata - mean(traindata)) ./ var(traindata);
-testdata = (testdata - mean(testdata)) ./ var(testdata);
+% % zero meain features
+% traindata = (traindata - mean(traindata)) ./ std(traindata);
+% testdata = (testdata - mean(testdata)) ./ std(testdata);
 
 % Shuffle the data set
 perm = randperm(length(trainlabels));
