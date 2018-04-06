@@ -10,7 +10,7 @@ function [descriptors] = extract_features(input_image, settings)
 
 input_im = imread(char(input_image));
 
-[~,~,sizez] = size(input_im);
+[sizex,sizey,sizez] = size(input_im);
 
 if settings.color_scheme == "gray"
     if sizez == 3
@@ -28,31 +28,43 @@ if settings.color_scheme == "gray"
 else
     if sizez == 3
         
-        temp_im = single(rgb2gray(input_im));
+        gray_im = single(rgb2gray(input_im));
         
-        if settings.color_scheme == "RGB"            
-            input_im = single(input_im);
-        elseif settings.color_scheme == "rgb"
-            input_im = single(rgb2normedrgb(input_im));
-        elseif settings.color_scheme == "opponent"
-            input_im = single(rgb2opponent(input_im));
-        end
+    elseif sizez == 1
         
-        if settings.sift_type == "dense"
-            
-            [~, descriptors] = vl_phow(input_im, 'step', 10, 'color','rgb'); 
-            
-        elseif settings.sift_type == "keypoint"
-            
-            [temp_frames, ~] = vl_sift(temp_im);
-            [~, temp_descriptors1] = vl_sift(input_im(:,:,1), 'frames', temp_frames);
-            [~, temp_descriptors2] = vl_sift(input_im(:,:,2), 'frames', temp_frames);
-            [~, temp_descriptors3] = vl_sift(input_im(:,:,3), 'frames', temp_frames);
-            descriptors = cat(1, temp_descriptors1, temp_descriptors2, temp_descriptors3);
+        gray_im = single(input_im);
+        new_im = zeros(sizex, sizey, 3);
+        for i=1:3
+            new_im(:,:,i) = input_im;
         end
-    else
-        descriptors = [];
-    end 
+        input_im = new_im;
+    end
+        
+    if settings.color_scheme == "RGB"            
+        input_im = single(input_im);
+    elseif settings.color_scheme == "rgb"
+        input_im = single(rgb2normedrgb(im2double(input_im)));
+    elseif settings.color_scheme == "opponent"
+        input_im = single(rgb2opponent(input_im));
+    end
+        
+    if settings.sift_type == "dense"
+        [~, temp_descriptors1] = vl_dsift(input_im(:,:,1), 'step', 10);
+        [~, temp_descriptors2] = vl_dsift(input_im(:,:,2), 'step', 10);
+        [~, temp_descriptors3] = vl_dsift(input_im(:,:,3), 'step', 10);
+        descriptors = cat(1, temp_descriptors1, temp_descriptors2, temp_descriptors3);
+        %[~, descriptors] = vl_phow(input_im, 'step', 10, 'color','rgb'); 
+            
+    elseif settings.sift_type == "keypoint"
+            
+        [temp_frames, ~] = vl_sift(gray_im);
+        [~, temp_descriptors1] = vl_sift(input_im(:,:,1), 'frames', temp_frames);
+        [~, temp_descriptors2] = vl_sift(input_im(:,:,2), 'frames', temp_frames);
+        [~, temp_descriptors3] = vl_sift(input_im(:,:,3), 'frames', temp_frames);
+        descriptors = cat(1, temp_descriptors1, temp_descriptors2, temp_descriptors3);
+    end
+        
+        
 end
 
 end

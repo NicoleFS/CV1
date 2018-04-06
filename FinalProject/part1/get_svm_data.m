@@ -29,7 +29,7 @@ for c = 1:numel(imdb.meta.classes)
         [features] = vl_ikmeanspush(descriptor, kmeans_centers);
         % Create histogram of the features
         image_hist = hist(double(features), settings.vocab_size, 'Normalization', 'count');      
-        image_hist = (image_hist - mean(image_hist)) ./ var(image_hist);
+%         image_hist = (image_hist - mean(image_hist)) ./ var(image_hist);
         traindata = [traindata; image_hist];   
         trainlabels = [trainlabels; labels(i)];
     end
@@ -42,11 +42,15 @@ for c = 1:numel(imdb.meta.classes)
         descriptor = extract_features(paths(i), settings);
         [features] = vl_ikmeanspush(descriptor, kmeans_centers);
         image_hist = hist(double(features), settings.vocab_size, 'Normalization', 'count');      
-        image_hist = (image_hist - mean(image_hist)) ./ var(image_hist);
+%         image_hist = (image_hist - mean(image_hist)) ./ var(image_hist);
         testdata = [testdata; image_hist];   
         testlabels = [testlabels; labels(i)];
     end
 end
+
+% zero meain features
+traindata = (traindata - mean(traindata)) ./ var(traindata);
+testdata = (testdata - mean(testdata)) ./ var(testdata);
 
 % Shuffle the data set
 perm = randperm(length(trainlabels));
