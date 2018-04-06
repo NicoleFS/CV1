@@ -1,0 +1,9 @@
+settings,map
+100im_400voc_gray_dense,0.93187
+100im_400voc_gray_keypoint,0.69604
+100im_400voc_opponent_dense,0.91248
+100im_400voc_opponent_keypoint,0.70175
+100im_400voc_RGB_dense,0.94242
+100im_400voc_RGB_keypoint,0.71482
+100im_400voc_rgb_keypoint,0.60056
+
