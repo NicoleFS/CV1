@@ -20,8 +20,8 @@ settings.images_kmeans = 100;
 settings.vocab_size = 400;
 
 % colorspace and sift-type for feature extraction
-settings.color_scheme = "gray";
-settings.sift_type = "dense";
+settings.color_scheme = "rgb";
+settings.sift_type = "keypoint";
 
 % path to imagefolder
 settings.image_folder = '../Caltech4/ImageData/';
@@ -30,10 +30,13 @@ settings.image_folder = '../Caltech4/ImageData/';
 imdb = getCaltechIMDB(settings.image_folder);
 
 %% Get K-means centers
-% load('100im_400voc_gray_keypoint.mat');
-load('100im_400voc_gray_dense.mat');
-kmeans_centers = centers;
-% kmeans_centers = get_kmeans_centers(imdb, settings);
+file_name = sprintf('%.0fim_%.0fvoc_%s_%s.mat', settings.images_kmeans, settings.vocab_size, settings.color_scheme, settings.sift_type);
+if exist(file_name, 'file') == 2
+    fprintf('Loading file: %s\n', file_name);
+    load(file_name);
+else
+    kmeans_centers = get_kmeans_centers(imdb, settings);
+end
 
 % Shuffle the kmeans centers
 % kmeans_centers = kmeans_centers(:, randperm(size(kmeans_centers, 2)));
@@ -63,11 +66,14 @@ for c = 1:numel(imdb.meta.classes)
     ap2 = average_precision(confidence(:, 2), labels, sum(labels));
     if ap1 > ap2
         ap = ap1;
+        column = 1;
     else
         ap = ap2;
+        column = 2;
     end
     aps = [aps ap];
-    fprintf('Class %s has an average precision of %.5f\n', imdb.meta.classes{c}, ap);
+%     fprintf('Class %s has an average precision of %.5f\n', imdb.meta.classes{c}, ap);
+%     show_topn_images(confidence(:, column), testset.paths, imdb.meta.classes{c}, 7) 
 end
 fprintf('Mean average precision: %.5f\n', mean(aps));
 
@@ -99,6 +105,24 @@ for i=1:size(ordered, 1)
     ap = ap + ordered(i, 2)*correct/i;
 end
 ap = ap/n;
+end
+
+function show_topn_images(confidence, paths, title_name, n, direction)
+if nargin < 5
+    direction = 'descend';
+end
+ap = 0;
+ordered = sortrows([confidence, paths.'], direction);
+n2 = n*n;
+top_9 = ordered(1:n2, 2);
+
+hfig = figure;
+set(hfig, 'Position', [0 0 2000 1500])
+for i=1:numel(top_9)
+    im = im2double(imread(char(top_9(i))));
+    subplot(n,n,i), imshow(im), title(i);
+end
+suptitle(title_name);
 end
 
 
