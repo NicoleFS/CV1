@@ -12,8 +12,12 @@ function [trainset, testset] = get_svm_data(imdb, kmeans_centers, settings)
 
 traindata = [];
 trainlabels = [];
+trainpaths = string();
+train_paths_index = 1;
 testdata = [];
 testlabels = [];
+testpaths = string();
+test_paths_index = 1;
 for c = 1:numel(imdb.meta.classes)
     select = (imdb.images.labels == c & imdb.images.set == 1);
     % Paths to training images per class
@@ -30,9 +34,10 @@ for c = 1:numel(imdb.meta.classes)
         % Create histogram of the features
         image_hist = hist(double(features), settings.vocab_size, 'Normalization', 'count');      
         image_hist = image_hist ./ sum(image_hist);
-%         image_hist = (image_hist - mean(image_hist)) ./ var(image_hist);
         traindata = [traindata; image_hist];   
         trainlabels = [trainlabels; labels(i)];
+        trainpaths(train_paths_index) = paths(i);
+        train_paths_index = train_paths_index + 1;
     end
     
     % Do the same for the test set
@@ -43,31 +48,32 @@ for c = 1:numel(imdb.meta.classes)
         descriptor = extract_features(paths(i), settings);
         [features] = vl_ikmeanspush(descriptor, kmeans_centers);
         image_hist = hist(double(features), settings.vocab_size, 'Normalization', 'count');      
-%         image_hist = image_hist ./ sum(image_hist);
-%         image_hist = (image_hist - mean(image_hist)) ./ var(image_hist);
+        image_hist = image_hist ./ sum(image_hist);
         testdata = [testdata; image_hist];   
         testlabels = [testlabels; labels(i)];
+        testpaths(test_paths_index) = paths(i);
+        test_paths_index = test_paths_index + 1;
     end
 end
-
-% % zero meain features
-% traindata = (traindata - mean(traindata)) ./ std(traindata);
-% testdata = (testdata - mean(testdata)) ./ std(testdata);
 
 % Shuffle the data set
 perm = randperm(length(trainlabels));
 trainlabels = trainlabels(perm);
 traindata = traindata(perm, :);
+trainpaths = trainpaths(perm);
 
 % Create train set
 trainset.labels = double(trainlabels);
 trainset.features = sparse(double(traindata));
+trainset.paths = trainpaths;
 
 % Do the same for the test set
 perm = randperm(length(testlabels));
 testlabels = testlabels(perm);
 testdata = testdata(perm, :);
+testpaths = testpaths(perm);
 testset.labels = double(testlabels);
 testset.features = sparse(double(testdata));
+testset.paths = testpaths;
 
 end
