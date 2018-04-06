@@ -53,7 +53,6 @@ else
         [~, temp_descriptors2] = vl_dsift(input_im(:,:,2), 'step', 10);
         [~, temp_descriptors3] = vl_dsift(input_im(:,:,3), 'step', 10);
         descriptors = cat(1, temp_descriptors1, temp_descriptors2, temp_descriptors3);
-        %[~, descriptors] = vl_phow(input_im, 'step', 10, 'color','rgb'); 
             
     elseif settings.sift_type == "keypoint"
             

@@ -21,8 +21,8 @@ settings.images_kmeans = 100;
 settings.vocab_size = 400;
 
 % colorspace and sift-type for feature extraction
-settings.color_scheme = "rgb";
-settings.sift_type = "dense";
+settings.color_scheme = "gray";
+settings.sift_type = "keypoint";
 
 % path to imagefolder
 settings.image_folder = '../Caltech4/ImageData/';
@@ -31,8 +31,8 @@ settings.image_folder = '../Caltech4/ImageData/';
 imdb = getCaltechIMDB(settings.image_folder);
 
 %% Get K-means centers
-% load('100im_400voc_opponent_keypoint.mat')
-kmeans_centers = get_kmeans_centers(imdb, settings);
+ load('100im_400voc_gray_keypoint.mat')
+%kmeans_centers = get_kmeans_centers(imdb, settings);
 
 % Shuffle the kmeans centers
 % kmeans_centers = kmeans_centers(:, randperm(size(kmeans_centers, 2)));
