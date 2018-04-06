@@ -29,11 +29,12 @@ for c = 1:numel(imdb.meta.classes)
         [features] = vl_ikmeanspush(descriptor, kmeans_centers);
         % Create histogram of the features
         image_hist = hist(double(features), settings.vocab_size, 'Normalization', 'count');      
+        image_hist = (image_hist - mean(image_hist)) ./ var(image_hist);
         traindata = [traindata; image_hist];   
         trainlabels = [trainlabels; labels(i)];
     end
     
-    % The same for test set
+    % Do the same for the test set
     select = (imdb.images.labels == c & imdb.images.set == 2);
     paths = imdb.images.paths(select);
     labels = imdb.images.labels(select);
@@ -41,22 +42,26 @@ for c = 1:numel(imdb.meta.classes)
         descriptor = extract_features(paths(i), settings);
         [features] = vl_ikmeanspush(descriptor, kmeans_centers);
         image_hist = hist(double(features), settings.vocab_size, 'Normalization', 'count');      
+        image_hist = (image_hist - mean(image_hist)) ./ var(image_hist);
         testdata = [testdata; image_hist];   
         testlabels = [testlabels; labels(i)];
     end
 end
 
-% Create test and train set
+% Shuffle the data set
+perm = randperm(length(trainlabels));
+trainlabels = trainlabels(perm);
+traindata = traindata(perm, :);
+
+% Create train set
 trainset.labels = double(trainlabels);
 trainset.features = sparse(double(traindata));
-perm = randperm(length(trainset.labels));
-trainset.labels = trainset.labels(perm);
-trainset.features = trainset.features(perm, :);
 
+% Do the same for the test set
+perm = randperm(length(testlabels));
+testlabels = testlabels(perm);
+testdata = testdata(perm, :);
 testset.labels = double(testlabels);
 testset.features = sparse(double(testdata));
-perm = randperm(length(testset.labels));
-testset.labels = testset.labels(perm);
-testset.features = testset.features(perm, :);
 
 end
