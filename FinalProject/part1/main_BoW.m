@@ -2,6 +2,7 @@ clc
 clearvars
 close all
 
+%%
 run vlfeat-0.9.21/toolbox/vl_setup.m
 addpath liblinear-2.1/matlab
 
@@ -31,6 +32,9 @@ imdb = getCaltechIMDB(settings.image_folder);
 %% Get K-means centers
 kmeans_centers = get_kmeans_centers(imdb, settings);
 
+% Shuffle the kmeans centers
+% kmeans_centers = kmeans_centers(:, randperm(size(kmeans_centers, 2)));
+
 %% Preparing data set for SVM
 % Computes train and test for the SVM, based on the kmeans centroids
 [trainset, testset] = get_svm_data(imdb, kmeans_centers, settings);
@@ -38,27 +42,29 @@ kmeans_centers = get_kmeans_centers(imdb, settings);
 %% SVM models
 % Creates a SVM model for each class
 models = [];
-direction = 'descend';
 for c = 1:numel(imdb.meta.classes)
     labels = double(trainset.labels == c);
     best = train(labels, trainset.features, '-C -s 0 -q');
     model = train(labels, trainset.features, sprintf('-c %f -s 0 -q', best(1))); % use the same solver: -s 0
+%     model = train(labels, trainset.features, '-s 0 -q');
     models = [models model];
 end
 
 %% Predict with trained SVM
 % Does a prediction for all test images
 aps = [];
-direction = 'descend';
 for c = 1:numel(imdb.meta.classes)
     labels = double(testset.labels == c);
     [prediction, accuracy, confidence] = predict(labels, testset.features, models(c), '-b 1 -q');
-%     if c > 1
-%         direction = 'ascend';
-%     end
-    ap = average_precision(confidence(:, 1), labels, sum(labels), direction);
+    ap1 = average_precision(confidence(:, 1), labels, sum(labels));
+    ap2 = average_precision(confidence(:, 2), labels, sum(labels));
+    if ap1 > ap2
+        ap = ap1;
+    else
+        ap = ap2;
+    end
     aps = [aps ap];
-%     fprintf('Class %s has an average precision of %.5f\n', imdb.meta.classes{c}, ap);
+    fprintf('Class %s has an average precision of %.5f\n', imdb.meta.classes{c}, ap);
 end
 fprintf('Mean average precision: %.5f\n', mean(aps));
 
@@ -95,7 +101,7 @@ end
 
 function imdb = getCaltechIMDB(image_folder)
 % Prepare the imdb structure, returns image data with mean image subtracted
-classes = {'cars', 'faces', 'motorbikes', 'airplanes'};
+classes = {'airplanes', 'cars', 'faces', 'motorbikes'};
 splits = {'train', 'test'};
 
 paths = string();
@@ -118,17 +124,16 @@ for c = 1:numel(classes)
 end
 
 %%
-
 imdb.images.paths = paths.' ;
 imdb.images.labels = single(labels).' ;
 imdb.images.set = sets.';
 imdb.meta.sets = {'train', 'val'} ;
 imdb.meta.classes = classes;
 
-% perm = randperm(numel(imdb.images.labels));
-% imdb.images.data = imdb.images.paths(perm);
-% imdb.images.labels = imdb.images.labels(perm);
-% imdb.images.set = imdb.images.set(perm);
+perm = randperm(numel(imdb.images.labels));
+imdb.images.paths = imdb.images.paths(perm);
+imdb.images.labels = imdb.images.labels(perm);
+imdb.images.set = imdb.images.set(perm);
 
 end
 
