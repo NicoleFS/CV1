@@ -30,6 +30,7 @@ settings.image_folder = '../Caltech4/ImageData/';
 imdb = getCaltechIMDB(settings.image_folder);
 
 %% Get K-means centers
+% load('100im_400voc_opponent_keypoint.mat')
 kmeans_centers = get_kmeans_centers(imdb, settings);
 
 % Shuffle the kmeans centers
