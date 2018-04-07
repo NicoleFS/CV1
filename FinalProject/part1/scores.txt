@@ -1,4 +1,4 @@
-images_test=50, images_kmeans=50
+images_test=50, images_kmeans=100
 settings,map
 100im_400voc_gray_dense,0.93187
 100im_400voc_gray_keypoint,0.69604
@@ -8,10 +8,14 @@ settings,map
 100im_400voc_RGB_keypoint,0.71482
 100im_400voc_rgb_keypoint,0.60056
 100im_800voc_RGB_dense,0.92450
+100im_4000voc_RGB_dense,0.80401
 
-images_test=350, images_kmeans=50
+images_test=300, images_kmeans=50
 100im_400voc_RGB_dense,0.97823
 100im_800voc_RGB_dense,0.97865
+100im_1600voc_RGB_dense,0.97088
 100im_4000voc_RGB_dense,0.91305
+
+200im_400voc_RGB_dense,0.96234
 
 
