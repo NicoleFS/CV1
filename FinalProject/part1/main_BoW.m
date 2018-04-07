@@ -9,16 +9,16 @@ addpath liblinear-2.1/matlab
 
 %% Parameters
 
-% amount of images per category to train SVM model on
-settings.images_train = 50;
-
-% % amount of images per category for testing
-% settings.images_test = 50;
-
 % amount of images per category to compute centroids
 settings.images_kmeans = 100;
 % amount of centroids for k-means
-settings.vocab_size = 400;
+settings.vocab_size = 4000;
+
+% amount of images per category to train SVM model on
+settings.images_train = 400-settings.images_kmeans;
+
+% % amount of images per category for testing
+% settings.images_test = 50;
 
 % colorspace and sift-type for feature extraction
 settings.color_scheme = "RGB";
@@ -29,6 +29,23 @@ settings.image_folder = '../Caltech4/ImageData/';
 
 % structure with links to all images
 imdb = getCaltechIMDB(settings.image_folder);
+% Class airplanes has 550 images
+% Class cars has 515 images
+% Class faces has 450 images
+% Class motorbikes has 550 images
+% each has 50 test images
+
+%%
+% for vocab_size=[800, 4000]
+%     settings.vocab_size = vocab_size;
+%     disp(settings.vocab_size);
+%     kmeans_centers = get_kmeans_centers(imdb, settings);
+% end
+
+% for c = 1:numel(imdb.meta.classes)
+%     select = (imdb.images.labels == c & imdb.images.set == 1);
+%     fprintf('Class %s has %.0f images\n', imdb.meta.classes{c}, sum(select));
+% end
 
 %% Get K-means centers
 file_name = sprintf('%.0fim_%.0fvoc_%s_%s.mat', settings.images_kmeans, settings.vocab_size, settings.color_scheme, settings.sift_type);
