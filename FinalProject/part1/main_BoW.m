@@ -10,9 +10,9 @@ addpath liblinear-2.1/matlab
 %% Parameters
 
 % amount of images per category to compute centroids
-settings.images_kmeans = 100;
+settings.images_kmeans = 200;
 % amount of centroids for k-means
-settings.vocab_size = 4000;
+settings.vocab_size = 400;
 
 % amount of images per category to train SVM model on
 settings.images_train = 400-settings.images_kmeans;
@@ -36,9 +36,11 @@ imdb = getCaltechIMDB(settings.image_folder);
 % each has 50 test images
 
 %%
-% for vocab_size=[800, 4000]
-%     settings.vocab_size = vocab_size;
-%     disp(settings.vocab_size);
+% for images_kmeans=[300, 50]
+%     settings.images_kmeans = images_kmeans;
+%     settings.images_train = 400-settings.images_kmeans;
+%     disp(settings.images_kmeans);
+%     disp(settings.images_train);
 %     kmeans_centers = get_kmeans_centers(imdb, settings);
 % end
 
