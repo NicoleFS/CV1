@@ -2,7 +2,6 @@ clc
 clearvars
 close all
 
-
 %%
 run vlfeat-0.9.21/toolbox/vl_setup.m
 addpath liblinear-2.1/matlab
@@ -10,7 +9,7 @@ addpath liblinear-2.1/matlab
 %% Parameters
 
 % amount of images per category to compute centroids
-settings.images_kmeans = 100;
+settings.images_kmeans = 50;
 % amount of centroids for k-means
 settings.vocab_size = 400;
 
@@ -21,8 +20,8 @@ settings.images_train = 400-settings.images_kmeans;
 % settings.images_test = 50;
 
 % colorspace and sift-type for feature extraction
-settings.color_scheme = "rgb";
-settings.sift_type = "keypoint";
+settings.color_scheme = "RGB";
+settings.sift_type = "dense";
 
 % path to imagefolder
 settings.image_folder = '../Caltech4/ImageData/';
@@ -80,6 +79,7 @@ end
 %% Predict with trained SVM
 % Does a prediction for all test images
 aps = [];
+confidences = [];
 for c = 1:numel(imdb.meta.classes)
     labels = double(testset.labels == c);
     [prediction, accuracy, confidence] = predict(labels, testset.features, models(c), '-b 1 -q');
@@ -93,10 +93,14 @@ for c = 1:numel(imdb.meta.classes)
         column = 2;
     end
     aps = [aps ap];
-%     fprintf('Class %s has an average precision of %.5f\n', imdb.meta.classes{c}, ap);
+    confidences = [confidences confidence(:, column)];
+    fprintf('Class %s has an average precision of %.5f\n', imdb.meta.classes{c}, ap);
 %     show_topn_images(confidence(:, column), testset.paths, imdb.meta.classes{c}, 7) 
 end
 fprintf('Mean average precision: %.5f\n', mean(aps));
+
+%%
+make_html(confidences, testset.paths, aps, settings);
 
 %% Helper functions
 
