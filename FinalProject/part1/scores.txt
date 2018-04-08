@@ -1,5 +1,5 @@
-images_test=50, images_kmeans=100
 settings,map
+images_train=50, images_kmeans=100
 100im_400voc_gray_dense,0.93187
 100im_400voc_gray_keypoint,0.69604
 100im_400voc_opponent_dense,0.91248
@@ -7,15 +7,29 @@ settings,map
 100im_400voc_RGB_dense,0.94242
 100im_400voc_RGB_keypoint,0.71482
 100im_400voc_rgb_keypoint,0.60056
+
 100im_800voc_RGB_dense,0.92450
 100im_4000voc_RGB_dense,0.80401
 
-images_test=300, images_kmeans=50
+images_train=300, images_kmeans=100
 100im_400voc_RGB_dense,0.97823
 100im_800voc_RGB_dense,0.97865
 100im_1600voc_RGB_dense,0.97088
 100im_4000voc_RGB_dense,0.91305
 
+50im_400voc_RGB_dense,0.98259
+100im_400voc_RGB_dense,0.97823
 200im_400voc_RGB_dense,0.96234
+300im_400voc_RGB_dense,0.95207
+
+image_train=300, image_kmeans=100
+100im_400voc_gray_dense,0.96676
+100im_400voc_gray_keypoint,0.81548
+100im_400voc_opponent_dense,0.95448
+100im_400voc_opponent_keypoint,0.79162
+100im_400voc_RGB_dense,0.97703
+100im_400voc_RGB_keypoint,0.85318
+100im_400voc_rgb_keypoint,0.79659
+
 
 

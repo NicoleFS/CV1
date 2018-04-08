@@ -10,7 +10,7 @@ addpath liblinear-2.1/matlab
 %% Parameters
 
 % amount of images per category to compute centroids
-settings.images_kmeans = 200;
+settings.images_kmeans = 100;
 % amount of centroids for k-means
 settings.vocab_size = 400;
 
@@ -21,8 +21,8 @@ settings.images_train = 400-settings.images_kmeans;
 % settings.images_test = 50;
 
 % colorspace and sift-type for feature extraction
-settings.color_scheme = "RGB";
-settings.sift_type = "dense";
+settings.color_scheme = "rgb";
+settings.sift_type = "keypoint";
 
 % path to imagefolder
 settings.image_folder = '../Caltech4/ImageData/';
