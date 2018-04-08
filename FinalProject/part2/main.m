@@ -24,5 +24,4 @@ train_svm(nets, data);
 %%
 
 close all
-plot_tsne(nets, data);
-
+[ydata, labels] = plot_tsne(nets, data);

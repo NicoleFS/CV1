@@ -1,4 +1,4 @@
-function plot_tsne(nets, data)
+function [ydata, labels] = plot_tsne(nets, data)
 
 %% replace loss with the classification as we will extract features
 nets.pre_trained.layers{end}.type = 'softmax';
@@ -23,7 +23,7 @@ for i = 1:size(data.images.data, 4)
 end
 
 %%
-ydata = tsne(predictions);
+% ydata = tsne(predictions);
 % figure(2);
 % plot(ydata(:, 1), ydata(:, 2), '.');
 % title('Pretrained, without labels');
@@ -31,8 +31,9 @@ ydata = tsne(predictions);
 figure;
 ydata = tsne(predictions, labels);
 figure;
-plot(ydata(:, 1), ydata(:, 2), '.');
-title('Labels');
+gscatter(ydata(:, 1), ydata(:, 2), labels, [], 'ox+*sdv^<>ph.');
+axis off
+% title('Labels');
 
 F = getframe(gca);
 imwrite(F.cdata, 'figures/tsne-pre.png');
@@ -49,7 +50,7 @@ for i = 1:size(data.images.data, 4)
 end
 
 %%
-ydata = tsne(predictions);
+% ydata = tsne(predictions);
 % figure(1);
 % plot(ydata(:, 1), ydata(:, 2), '.');
 % title('Fine tuned, without labels');
@@ -57,7 +58,8 @@ ydata = tsne(predictions);
 figure;
 ydata = tsne(predictions, labels);
 figure;
-plot(ydata(:, 1), ydata(:, 2), '.');
+gscatter(ydata(:, 1), ydata(:, 2), labels, [], 'ox+*sdv^<>ph.');
+axis off
 title('Labels');
 
 F = getframe(gca);
