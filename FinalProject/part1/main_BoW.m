@@ -34,20 +34,6 @@ imdb = getCaltechIMDB(settings.image_folder);
 % Class motorbikes has 550 images
 % each has 50 test images
 
-%%
-% for images_kmeans=[300, 50]
-%     settings.images_kmeans = images_kmeans;
-%     settings.images_train = 400-settings.images_kmeans;
-%     disp(settings.images_kmeans);
-%     disp(settings.images_train);
-%     kmeans_centers = get_kmeans_centers(imdb, settings);
-% end
-
-% for c = 1:numel(imdb.meta.classes)
-%     select = (imdb.images.labels == c & imdb.images.set == 1);
-%     fprintf('Class %s has %.0f images\n', imdb.meta.classes{c}, sum(select));
-% end
-
 %% Get K-means centers
 file_name = sprintf('%.0fim_%.0fvoc_%s_%s.mat', settings.images_kmeans, settings.vocab_size, settings.color_scheme, settings.sift_type);
 if exist(file_name, 'file') == 2
